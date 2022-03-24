@@ -2,9 +2,7 @@ const std = @import("std");
 
 pub fn main() !void {
     const fn_bytes = [_]u8{ 197, 251, 88, 193, 195, 102, 102, 46, 15, 31, 132, 0, 0, 0, 0, 0 };
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+    const allocator = std.heap.page_allocator;
     var slice: []align(std.mem.page_size) u8 = try allocator.alignedAlloc(u8, std.mem.page_size, std.mem.page_size);
     defer dynFree(allocator, slice);
     slice[0..fn_bytes.len].* = fn_bytes;
