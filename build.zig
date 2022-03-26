@@ -1,5 +1,4 @@
 const std = @import("std");
-const main = @import("./src/main.zig");
 
 pub fn build(b: *std.build.Builder) void {
     // Standard target options allows the person running `zig build` to choose
@@ -12,10 +11,16 @@ pub fn build(b: *std.build.Builder) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
+    const should_valgrind = b.option(bool, "valgrind", "Enable valgrind mode") orelse false;
+
+    const options = b.addOptions();
+    options.addOption(bool, "valgrind", should_valgrind);
+
     const exe = b.addExecutable("smc", "src/main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
-    if (main.valgrind_mode) exe.linkLibC();
+    exe.addOptions("options", options);
+    if (should_valgrind) exe.linkLibC();
     exe.install();
 
     const run_cmd = exe.run();
