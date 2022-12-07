@@ -19,6 +19,8 @@ pub fn build(b: *std.build.Builder) void {
     const exe = b.addExecutable("smc", "src/main.zig");
     exe.setTarget(target);
     exe.setBuildMode(mode);
+    exe.pie = true;
+    exe.force_pic = true;
     exe.addOptions("options", options);
     if (should_valgrind) exe.linkLibC();
     exe.install();

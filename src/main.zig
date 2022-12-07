@@ -10,7 +10,7 @@ pub fn main() !void {
     slice[0..fn_bytes.len].* = fn_bytes;
     for (fn_bytes) |b, i| slice[i] = b;
     try setRwx(slice);
-    var mem_fn = @ptrCast(fn (f64, f64) f64, slice.ptr);
+    var mem_fn = @ptrCast(*const fn (f64, f64) f64, slice.ptr);
     const n1: f64 = 1.23;
     const n2: f64 = 4.56;
     std.log.info("{d}", .{mem_fn(n1, n2)});
@@ -24,18 +24,18 @@ pub fn main() !void {
     std.log.info("{d}", .{mem_fn(n1, n2)});
     std.log.info("{*}", .{slice.ptr});
 
-    // slice[2] = 94;
+    slice[2] = 94;
     std.log.info("{d}", .{mem_fn(n1, n2)});
     std.log.info("{*}", .{slice.ptr});
 }
 
 fn dynFree(allocator: std.mem.Allocator, slice: []align(std.mem.page_size) u8) void {
-    setRw(slice);
+    setRw(slice) catch @panic("😱");
     allocator.free(slice);
 }
 
-fn setRw(slice: []align(std.mem.page_size) u8) void {
-    std.os.mprotect(slice, std.os.PROT.WRITE | std.os.PROT.READ) catch @panic("😱");
+fn setRw(slice: []align(std.mem.page_size) u8) !void {
+    try std.os.mprotect(slice, std.os.PROT.WRITE | std.os.PROT.READ);
 }
 
 fn setRwx(slice: []align(std.mem.page_size) u8) !void {
